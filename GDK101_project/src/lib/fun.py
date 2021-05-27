@@ -27,7 +27,15 @@ def DATA_TRANSFER(_i2c,  device_addr, command):
         data = _i2c.readfrom_mem(device_addr, command, 2)
     return data
 
-#def RESET_DEVICE(_i2c, device_addr):
+def RESET_DEVICE(_i2c, device_addr, cmd_rst, lcd):
+    result = DATA_TRANSFER(_i2c, device_addr, cmd_rst)
+    # result saved in first byte of data:
+    #  0 - fail  1 - pass
+    if(result[0]):
+        DISPLAY_TEXT(lcd, "device restarted", 0)
+    else:
+        DISPLAY_TEXT(lcd, "restart fail", 0)
+
 
 def DISPLAY_VERSION(_i2c, lcd, device_addr, location):
     #test if location is not out od bounds
@@ -35,14 +43,41 @@ def DISPLAY_VERSION(_i2c, lcd, device_addr, location):
         raise Exception('location {} is out of bounds: '.format(location))
     data = _i2c.readfrom_mem(device_addr, consts.READ_FIRMWARE_VERSION, 2)
     version = "version: "+str(data[0]) + '.' + str(data[1])
-    print(version)
-    #coordinates is calculated by int division and reminder
-    column = location % consts.DISPLAY_WIDTH
-    line = location // consts.DISPLAY_WIDTH
-    DISPLAY_TEXT(lcd, version, column, line)
+    DISPLAY_TEXT(lcd, version, location)
 
 
-def DISPLAY_TEXT(lcd, text, x_pos, y_pos):
+def MEASURE(_i2c, lcd, device_addr, location, cmd_mod):
+    if(cmd_mod is not 0XB2 and cmd_mod is not 0XB3):
+                raise Exception('bad command!')
+
+    time = _i2c.readfrom_mem(device_addr, consts.READ_MEASURING_TIME,2)
+    data = _i2c.readfrom_mem(device_addr, cmd_mod,2)
+    DISPLAY_TIME(lcd, time[0], time[1],location)
+    location += 128*consts.LETTER_SIZE +1 #count new line
+    DISPLAY_MEASUREMENT(lcd, data[0], data[1], cmd_mod,location)
+
+
+def DISPLAY_TIME(lcd, min, sec, location):
+    total = min + sec
+    days = total // (84400)#60*60*24
+    hours = total // 3600
+    min = min % 60
+    sec = sec % 60
+
+    text = "time:" + str(days) + "d" + str(hours) + "h" + str(min) + "m" + str(sec) + "s"
+    print(text)
+    DISPLAY_TEXT(lcd, text, location)
+
+def DISPLAY_MEASUREMENT(lcd, integralPart, decimalPart, cmd_mod, location):
+    interval = "10min" if ( cmd_mod is "0xb2") else "1min"
+    value = integralPart + decimalPart/100
+    text = interval + ":" + str(value) + "uSv/h"
+    DISPLAY_TEXT(lcd, text, location)
+
+def DISPLAY_TEXT(lcd, text, location):
+    #coordinates is calculated by integral division and reminder
+    x_pos = location % consts.DISPLAY_WIDTH
+    y_pos = location // consts.DISPLAY_WIDTH
     y_pos = y_pos - consts.LETTER_SIZE  if (y_pos + consts.LETTER_SIZE  > consts.DISPLAY_HEIGTH ) else y_pos 
     textLengthPixels = len(text)*consts.LETTER_SIZE
     x_pos = x_pos - textLengthPixels  if (x_pos + textLengthPixels  > consts.DISPLAY_WIDTH ) else x_pos 
@@ -52,6 +87,3 @@ def DISPLAY_TEXT(lcd, text, x_pos, y_pos):
     lcd.text(text, x_pos, y_pos)
     lcd.show()
     time.sleep(2)
-
-
-
