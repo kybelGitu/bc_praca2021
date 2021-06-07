@@ -1,0 +1,147 @@
+services:
+    node-red:
+        # build: nodereddata
+        # depends_on:
+        #     - influx
+        container_name: bc-nodered
+        image: nodered/node-red
+        domainname: bc-xsebest
+        environment:
+            - TZ=Europe/Amsterdam
+        ports:
+            - "1880:1880"
+        volumes:
+            - nodereddata:/data
+
+    influx:
+        container_name: influx
+        image: influxdb
+        environment:
+    # #         # - INFLUXDB_HTTP_AUTH_ENABLED=TRUE
+            - INFLUXDB_ADMIN_USER=admin
+            - INFLUXDB_ADMIN_PASSWORD=admin
+    # #         # - INFLUXDB_USER={{influx-rw-user}}
+    # #         # - INFLUXDB_USER_PASSWORD={{influx-rw-pw}}
+    # #         # - INFLUXDB_READ_USER={{influx-read-user}}
+    # #         # - INFLUXDB_READ_USER_PASSWORD={{influx-read-pw}}
+    # #         # - INFLUXDB_DB={{influx-database}}
+    # #         # - INFLUXDB_RETENTION_NAME={{influx-retpol-name}}
+    # #         # - INFLUXDB_RETENTION_DURATION={{influx-retpol-duration}}
+    # #         # - INFLUXDB_RETENTION_REPLICATION={{influx-retpol-repl}}
+        ports:
+            - 8086:8086
+        volumes:
+            - nodereddata:/var/lib/influxdb
+            # - influx-storage: /var/lib/influxdb
+    # #         # - bc_mount: /bc_path/influx
+    # #         # - ./influx-storage:/var/lib/influxdb
+    # #         # - {{influx-init-path}}/init-influxdb.sh:/init-influxdb.sh
+
+    grafana:
+        # depends_on:
+        #     - influx
+        container_name: grafana 
+        image: grafana/grafana 
+        # domainname: grafanabc       
+        # environment:
+        #     - GF_SECURITY_ADMIN_USER=admin
+        #     - GF_SECURITY_ADMIN_PASSWORD=admin
+            # - GF_PATHS_PROVISIONING=/var/grafana-docker/provisioning
+            # - GRAFANA_INFLUX_DB={{influx-database}}
+            # - GRAFANA_INFLUX_USER={{influx-read-user}}
+            # - GRAFANA_INFLUX_PASSWORD={{influx-read-pw}}
+        # volumes:                
+        #     - nodereddata:/var/lib/grafana
+            # - bc_mount: /bc_path/nodeRedData
+            # - ./grafana-storage:/var/lib/grafana
+            # - {{grafana-path}}/provisioning:/var/grafana-docker/provisioning
+        ports:
+            - 3000:3000
+volumes:
+    nodereddata:
+        driver: azure_file
+        driver_opts:
+          share_name: bc-influx
+          storage_account_name: mystorageaccount12367
+#     influx-storage:
+#         driver: azure_file
+#         driver_opts:
+#             share_name: acishare
+#             storage_account_name: mystorageaccount12367
+# #     grafana-storage:  
+#         driver: azure_file
+#         driver_opts:
+#             share_name: acishare
+#             # share_name: bc-influx
+#             storage_account_name: mystorageaccount12367
+# mystorageaccount12367/bc-influx/grafana-storage
+
+    
+    
+
+        # app:
+        #     driver: azure_file
+        #     driver_opts:
+        #       share_name: acishare
+        #       storage_account_name: mystorageaccount12367
+
+# volumes:
+#     grafana-storage:
+#     influx-storage:
+
+
+# services:
+#     node-red:
+#         depends_on:
+#             - influx
+#         container_name: nodered-qbee
+#         build: {{nodered-image-path}}
+#         image: nodered-influx:{{nodered-image-version}}
+#         environment:
+#             - TZ=Europe/Amsterdam
+#             - FLOWS={{nodered-flow}}
+#         ports:
+#             - "{{nodered-port}}:1880"
+#         volumes:
+#             - {{nodered-data-path}}:/data
+
+#     influx:
+#         container_name: influx-qbee
+#         image: influxdb:{{influx-image-version}}
+#         environment:
+#             - INFLUXDB_HTTP_AUTH_ENABLED=TRUE
+#             - INFLUXDB_ADMIN_USER={{influx-admin-user}}
+#             - INFLUXDB_ADMIN_PASSWORD={{influx-admin-pw}}
+#             - INFLUXDB_USER={{influx-rw-user}}
+#             - INFLUXDB_USER_PASSWORD={{influx-rw-pw}}
+#             - INFLUXDB_READ_USER={{influx-read-user}}
+#             - INFLUXDB_READ_USER_PASSWORD={{influx-read-pw}}
+#             - INFLUXDB_DB={{influx-database}}
+#             - INFLUXDB_RETENTION_NAME={{influx-retpol-name}}
+#             - INFLUXDB_RETENTION_DURATION={{influx-retpol-duration}}
+#             - INFLUXDB_RETENTION_REPLICATION={{influx-retpol-repl}}
+#         volumes:
+#             - influx-storage:/var/lib/influxdb
+#             - {{influx-init-path}}/init-influxdb.sh:/init-influxdb.sh
+
+#     grafana:
+#         depends_on:
+#             - influx
+#         container_name: grafana-qbee
+#         image: grafana/grafana:{{grafana-image-version}}            
+#         environment:
+#             - GF_SECURITY_ADMIN_USER={{grafana-admin-user}}
+#             - GF_SECURITY_ADMIN_PASSWORD={{grafana-admin-pw}}
+#             - GF_PATHS_PROVISIONING=/var/grafana-docker/provisioning
+#             - GRAFANA_INFLUX_DB={{influx-database}}
+#             - GRAFANA_INFLUX_USER={{influx-read-user}}
+#             - GRAFANA_INFLUX_PASSWORD={{influx-read-pw}}
+#         volumes:                
+#             - grafana-storage:/var/lib/grafana
+#             - {{grafana-path}}/provisioning:/var/grafana-docker/provisioning
+#         ports:
+#             - {{grafana-port}}:3000
+
+# volumes:
+#     grafana-storage:
+#     influx-storage:
