@@ -10,12 +10,14 @@ services:
             - TZ=Europe/Amsterdam
         ports:
             - "1880:1880"
+            - "80:80"
         volumes:
             - nodereddata:/data
+            # - security:/usr/src/node-red/node_modules/node-red/
 
     influx:
         container_name: influx
-        image: influxdb
+        image: influxdb:1.8
         environment:
     # #         # - INFLUXDB_HTTP_AUTH_ENABLED=TRUE
             - INFLUXDB_ADMIN_USER=admin
@@ -42,6 +44,8 @@ services:
         #     - influx
         container_name: grafana 
         image: grafana/grafana 
+        env_file: 
+            - ./grafanaSettings.env
         # domainname: grafanabc       
         # environment:
         #     - GF_SECURITY_ADMIN_USER=admin
@@ -63,6 +67,12 @@ volumes:
         driver_opts:
           share_name: bc-influx
           storage_account_name: mystorageaccount12367
+    # security:
+    #     driver: azure_file
+    #     driver_opts:
+    #       share_name: security
+    #       storage_account_name: mystorageaccount12367
+
 #     influx-storage:
 #         driver: azure_file
 #         driver_opts:
